@@ -1,0 +1,18 @@
+name = "interpreter"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["Interpreter"]
+
+[leanOptions]
+autoImplicit = false
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+
+[[lean_lib]]
+name = "Interpreter"
+
+[[lean_exe]]
+name = "interpreter"
+root = "Main"
