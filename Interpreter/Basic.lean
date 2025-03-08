@@ -91,18 +91,3 @@ def eval {ty types}: Expr ty types → VarValues types → Val ty
     let var_val := eval var_expr values
     let values' := values.insert var var_val
     eval ret_expr values'
-    
-def Parse.int (str: String) : Option Int :=
-  if str.length > 0 then
-    let str' := str.take 2
-    let int := str'.toInt?
-    int
-  else
-    none
-
-def parse (str : String) : Option (Sigma (fun ty => Expr ty ∅)) :=
-  let str := str.trim
-  if let some int := Parse.int str then
-    some ⟨Ty.int, Expr.val int⟩
-  else
-    none
