@@ -1,23 +1,14 @@
 import Mathlib
 import Interpreter.Token
 
+variable {α β : Type}
+
+private abbrev Input := List Char
+
 inductive ParseRes error result where
-  | success : result -> List Char -> ParseRes error result
+  | success : result -> Input -> ParseRes error result
   | failure : error -> ParseRes error result
   deriving DecidableEq
-
-variable {α : Type}
-
-abbrev S := StateM (List Char)
-abbrev SM := inferInstanceAs (MonadState _ S)
-
-def chooseChar (pred : Char -> Option α) : S (Option α) :=
-  SM.modifyGet fun
-  | [] => (none, [])
-  | (c::cs) => 
-    match pred c with
-    | none => (none, cs)
-    | some a => (some a, cs)
 
 abbrev Digit := Fin 10
 
@@ -34,38 +25,143 @@ def charToDigit : Char -> Option Digit
   | '9' => some 9
   | _ => none
 
-@[simp]
-def digit : S (Option Digit) := chooseChar charToDigit
+/--
+This function repeatedly applies the given function as long as it can.
+-/
+def List.chooseWhile : Input -> (Char -> Option α) -> Input × List α
+  | [], _ => ([], [])
+  | head :: tail, f =>
+    match f head with
+    | none => (head :: tail, [])
+    | some a =>
+      let (rest, as) := tail.chooseWhile f
+      (rest, a :: as)
 
-partial def naturalNumber : S (Option Nat) := do
-  let leftMost <- digit
-  match leftMost with
-  | some d => go d
-  | none => pure none
+@[simp]
+lemma List.chooseWhile_nil {f : Char -> Option α}
+: List.chooseWhile [] f = ([], []) := rfl
+
+@[simp]
+lemma List.chooseWhile_none {f : Char -> Option α} {head tail}
+(h : f head = none)
+: (head :: tail).chooseWhile f = (head :: tail, []) := by
+  simp [List.chooseWhile, h]
+
+@[simp]
+lemma List.chooseWhile_some {f : Char -> Option α} {head tail a}
+(h : f head = some a)
+: (head :: tail).chooseWhile f
+  = (let (rest, as) := tail.chooseWhile f; (rest, a :: as)) := by
+  simp [List.chooseWhile, h]
+
+example
+: let isAlpha' c := if c.isAlpha then some c else none
+  List.chooseWhile "abcd efgh".toList isAlpha'
+  = (" efgh".toList, "abcd".toList)
+  := rfl
+
+abbrev digits (input : Input) := input.chooseWhile charToDigit
+
+/-
+def Nat.ofDigits := aux 0
 where
-  go (acc : Nat) : S Nat :=
-    do
-      match (← digit) with
-      | none => pure acc
-      | some d => go (acc * 10 + d.val)
+  aux
+  | acc, [] => acc
+  | acc, d :: ds => aux (acc * 10 + d) ds
+-/
+
+def naturalNumber : StateM Input Nat := do
+  let input ← get
+  let (rest, d) := digits input
+  set rest
+  let n := Nat.ofDigits 10 d.reverse
+  pure n
 
 @[simp]
-theorem chooseChar_run_nil {pred}
-: (@chooseChar α pred).run [] = (none, []) := rfl
+lemma naturalNumber_nil : naturalNumber.run [] = (0, []) := rfl
 
 @[simp]
-theorem chooseChar_run_cons {pred c cs}
-: (@chooseChar α pred).run (c :: cs) =
-  match pred c with
-  | none => (none, cs)
-  | some a => (some a, cs) := rfl
+lemma naturalNumber_not_digit
+{head tail}
+(h : charToDigit head = none)
+: naturalNumber.run (head :: tail) = (0, head :: tail) := by
+  simp [naturalNumber, h]
 
-example : naturalNumber.run "123".toList = (some 123, []) := by
-  unfold naturalNumber 
-  have : charToDigit '1' = some 1 := rfl
-  simp [this]
+example : naturalNumber "123".toList = (123, []) := rfl
 
-def tokenParser : Parser Char Error Token := 
-  naturalNumber.bind
+@[simp]
+def peek : StateM Input (Option Char) := do
+  (<- get) |> List.head? |> pure
 
-def lex (input : String) : List Token := sorry
+def popEq (c : Char) : StateM Input Bool := do
+  if (<- peek) == some c then
+    modify List.tail
+    pure true
+  else
+    pure false
+
+@[simp]
+lemma popEq_nil {c} : (popEq c).run [] = (false, []) := rfl
+
+@[simp]
+lemma popEq_true {c rest} : (popEq c).run (c :: rest) = (true, rest) := by
+  simp [popEq]
+
+def integer : StateM Input (Option Int) := do
+  if (<- popEq '-') then (Option.map Int.neg) <$> cont
+  else if (<- popEq '+') then cont
+  else if Option.isSome ((<- peek).bind charToDigit) then cont
+  else pure none
+where
+  cont : StateM Input (Option Int) := Option.some <$> naturalNumber
+
+example
+: integer "-123ahhh!!!".toList = (some (-123), "ahhh!!!".toList) := rfl
+
+def token : StateM Input Token := do
+  if (<- get).isEmpty then pure Token.eof
+  else if let some i := <- integer then pure (Token.int i)
+  else pure Token.eof -- TODO
+
+def advances (action : StateM Input (Option α)) : Prop :=
+  ∀ input, (action.run input).1.isSome -> (action.run input).2.length < input.length
+
+lemma advances_integer
+: advances integer := by
+  intro input h_isSome
+  unfold integer integer.cont at *
+  simp_all
+  match input with
+  | '-' :: input' =>
+    simp_all
+    sorry
+  | _ => sorry
+
+lemma advances_token
+: advances token := by
+  intro input notNil
+  cases input 
+  case nil => contradiction
+  rw [token]
+  simp [get, getThe, MonadStateOf.get]
+  unfold StateT.get
+  simp
+
+
+lemma size_token_le_size (input : Input) (notNil : input ≠ [])
+: sizeOf (token input).1 < sizeOf input := by
+  rw [token]
+  simp
+
+
+def lex (input : List Char) : List Token := 
+  match h : token input with
+  | (Token.eof, _) => []
+  | (t, rest) =>
+    have : sizeOf rest < sizeOf input := sorry
+    t :: lex rest
+termination_by input
+
+example : lex "123 456".toList = [Token.int 123, Token.int 456, Token.eof] := by
+  unfold lex
+
