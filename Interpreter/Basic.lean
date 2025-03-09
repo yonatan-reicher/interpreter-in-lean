@@ -80,6 +80,8 @@ inductive Expr : Ty → VarTypes → Type where
     Expr ty types
 deriving Repr
 
+abbrev SomeExpr := Σ ty vars, Expr ty vars
+
 def eval {ty types}: Expr ty types → VarValues types → Val ty
   | .val v, _ => v
   | Expr.var name, values => values.get name
