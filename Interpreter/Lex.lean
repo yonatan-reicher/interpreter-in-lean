@@ -37,6 +37,10 @@ def List.chooseWhile : Input -> (Char -> Option α) -> Input × List α
       let (rest, as) := tail.chooseWhile f
       (rest, a :: as)
 
+abbrev Prod.flip : α × β -> β × α | (x, y) => (y, x)
+def chooseWhile (f : Char -> Option α) : StateM Input (List α) :=
+  modifyGet fun input => Prod.flip ( List.chooseWhile input f )
+
 @[simp]
 lemma List.chooseWhile_nil {f : Char -> Option α}
 : List.chooseWhile [] f = ([], []) := rfl
@@ -70,24 +74,27 @@ where
   | acc, d :: ds => aux (acc * 10 + d) ds
 -/
 
-def naturalNumber : StateM Input Nat := do
+def naturalNumber : StateM Input (Option Nat) := do
   let input ← get
   let (rest, d) := digits input
-  set rest
-  let n := Nat.ofDigits 10 d.reverse
-  pure n
+  if d == []
+  then pure none
+  else
+    set rest
+    let n := Nat.ofDigits 10 d.reverse
+    pure (some n)
 
 @[simp]
-lemma naturalNumber_nil : naturalNumber.run [] = (0, []) := rfl
+lemma naturalNumber_nil : naturalNumber.run [] = (none, []) := rfl
 
 @[simp]
 lemma naturalNumber_not_digit
 {head tail}
 (h : charToDigit head = none)
-: naturalNumber.run (head :: tail) = (0, head :: tail) := by
+: naturalNumber.run (head :: tail) = (none, head :: tail) := by
   simp [naturalNumber, h]
 
-example : naturalNumber "123".toList = (123, []) := rfl
+example : naturalNumber "123".toList = (some 123, []) := rfl
 
 @[simp]
 def peek : StateM Input (Option Char) := do
@@ -113,7 +120,7 @@ def integer : StateM Input (Option Int) := do
   else if Option.isSome ((<- peek).bind charToDigit) then cont
   else pure none
 where
-  cont : StateM Input (Option Int) := Option.some <$> naturalNumber
+  cont : StateM Input (Option Int) := naturalNumber.map fun (x : Option ℕ) => x
 
 example
 : integer "-123ahhh!!!".toList = (some (-123), "ahhh!!!".toList) := rfl
@@ -125,6 +132,32 @@ def token : StateM Input Token := do
 
 def advances (action : StateM Input (Option α)) : Prop :=
   ∀ input, (action.run input).1.isSome -> (action.run input).2.length < input.length
+
+def advancesIf (pred : α -> Prop) (action : StateM Input α) : Prop :=
+  ∀ input, pred (action.run input).1 -> (action.run input).2.length < input.length
+
+lemma advances_chooseWhile {f : Char -> Option α}
+: advancesIf (!List.isEmpty .) (chooseWhile f) := by
+  intro input h_not_isEmpty
+  unfold chooseWhile at *
+  induction input
+  case nil => simp_all
+  case cons head tail ih =>
+    cases h : f head
+    simp_all
+    simp_all
+    show_term contradiction
+
+
+lemma advances_naturalNumber
+: advances naturalNumber := by
+  intro input h_isSome
+  simp_all [naturalNumber]
+  generalize List.chooseWhile input charToDigit = a at *
+  rcases a with ⟨input', digits⟩
+  cases digits
+  simp_all
+  simp_all
 
 lemma advances_integer
 : advances integer := by
