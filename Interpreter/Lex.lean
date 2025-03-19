@@ -1,4 +1,5 @@
 import Mathlib
+import Mathlib.Tactic
 import Interpreter.Token
 
 variable {α β : Type}
