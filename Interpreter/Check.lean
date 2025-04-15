@@ -1,4 +1,4 @@
-import Interpreter.Ast
+import Interpreter.Types.Ast
 import Interpreter.Basic -- Expr
 
 inductive Error

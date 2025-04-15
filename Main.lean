@@ -1,6 +1,8 @@
 import Interpreter
 
+
 open Std
+
 
 def IO.FS.Stream.getLines (stream : IO.FS.Stream) : IO (Array String) := do
     let mut array := Array.empty
@@ -10,18 +12,19 @@ def IO.FS.Stream.getLines (stream : IO.FS.Stream) : IO (Array String) := do
       line := ←stream.getLine
     return array
 
-inductive ParseResult where
-  | success : Sigma (Expr . ∅) → ParseResult
-  | failure : Unit → ParseResult
-deriving Inhabited, Repr
+abbrev ParseResult := Except Unit $ (type : Ty) × (Expr type ∅)
 
-def parseStream (stream : IO.FS.Stream) : IO ParseResult :=
-  stream.getLines.map (fun lines =>
-    let code := lines.foldl (fun acc line => acc ++ line) "\n"
-    match parse code with
-    | Option.some expr => ParseResult.success expr
-    | Option.none => ParseResult.failure ()
-  )
+
+def IO.FS.Stream.readText (stream : IO.FS.Stream) : IO String := do
+  stream.getLines
+  |>.map fun lines => lines.foldl (fun acc line => acc ++ line) "\n"
+
+
+def parseStream (stream : IO.FS.Stream) : ExceptT Unit IO $ (type : Ty) × (Expr type ∅) := do
+  let code <- stream.readText
+  let tokens <- Lex.lex code.toList |>.mapError fun _ => ()
+  let ast := parse tokens
+  sorry
 
 def main : IO Unit := do
   let stream ← IO.getStdin

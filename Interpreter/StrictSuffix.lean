@@ -1,7 +1,6 @@
-/-
-asatr
--/
-import Mathlib
+import Aesop
+import Paperproof
+
 
 /-!
 This file contains List.StrictSuffix, and a bunch of lemmas about it.
@@ -16,17 +15,17 @@ variable {α β : Type}
 
 def StrictSuffix (self : List α) (other : List α) : Prop :=
   self.IsSuffix other ∧ self.length < other.length
-  
+
 
 -- This is obviously a strict suffix
-example : [2, 3, 4].StrictSuffix [1, 2, 3, 4] := by 
-  constructor 
+example : [2, 3, 4].StrictSuffix [1, 2, 3, 4] := by
+  constructor
   repeat decide
 
 
 -- This is not, as a strict suffix is a suffix which is shorter
 example : ¬([1, 2].StrictSuffix [1, 2]) := by
-  by_contra h
+  intro h
   unfold StrictSuffix at h
   contradiction
 
@@ -68,9 +67,8 @@ theorem StrictSuffix.iff
 
 @[aesop unsafe]
 theorem StrictSuffix.irrefl (l : List α) : ¬ l.StrictSuffix l := by
-  by_contra h
-  have := h.length_lt_length
-  exact (lt_self_iff_false l.length).mp this
+  intro h
+  exact Nat.lt_irrefl _ h.length_lt_length
 
 
 @[aesop safe]
@@ -79,11 +77,11 @@ theorem StrictSuffix.of_ssuffix_of_suffix
 (h1 : l1.StrictSuffix l2)
 (h2 : l2.IsSuffix l3)
 : l1.StrictSuffix l3 := by
-  apply of_suffix_of_length_lt 
+  apply of_suffix_of_length_lt
   show l1.IsSuffix l3
   have : l1.IsSuffix l2 := h1.is_suffix
   have : l2.IsSuffix l3 := h2
-  trans <;> assumption
+  apply IsSuffix.trans <;> assumption
   show l1.length < l3.length
   have : l1.length < l2.length := h1.length_lt_length
   have : l2.length ≤ l3.length := h2.length_le
@@ -96,11 +94,11 @@ theorem StrictSuffix.of_suffix_of_ssuffix
 (h1 : l1.IsSuffix l2)
 (h2 : l2.StrictSuffix l3)
 : l1.StrictSuffix l3 := by
-  apply of_suffix_of_length_lt 
+  apply of_suffix_of_length_lt
   show l1.IsSuffix l3
   have : l1.IsSuffix l2 := h1
   have : l2.IsSuffix l3 := h2.is_suffix
-  trans <;> assumption
+  apply IsSuffix.trans <;> assumption
   show l1.length < l3.length
   have : l1.length ≤ l2.length := h1.length_le
   have : l2.length < l3.length := h2.length_lt_length
@@ -108,6 +106,8 @@ theorem StrictSuffix.of_suffix_of_ssuffix
 
 
 /-
+-- Found out this can be implemented really simply, but leaving this code
+-- because I found it interesting.
 instance {l1 l2 : List α} : Decidable (l1.IsSuffix l2) := by
   if h1 : l2.length < l1.length then
     apply Decidable.isFalse
@@ -134,18 +134,34 @@ instance {l1 l2 : List α} : Decidable (l1.IsSuffix l2) := by
 -/
 
 
-instance instDecidableStrictSuffix
-[DecidableEq α] (l1 l2 : List α) : Decidable (l1.StrictSuffix l2) := by
+instance instDecidableStrictSuffix [DecidableEq α] (l1 l2 : List α)
+: Decidable (l1.StrictSuffix l2) := by
   rw [StrictSuffix.iff]
   exact instDecidableAnd
 
 
-@[trans]
+-- @[trans]
 def StrictSuffix.trans
-(l1 l2 l3 : List α)
+{l1 l2 l3 : List α}
 : l1.StrictSuffix l2 -> l2.StrictSuffix l3 -> l1.StrictSuffix l3 := by
   intros h1 h2
   exact of_ssuffix_of_suffix h1 h2.is_suffix
+
+
+@[simp]
+def StrictSuffix.ssuffix_cons {head : α} {tail : List α}
+: tail.StrictSuffix (head :: tail) := by
+  apply of_suffix_of_length_lt
+  exact suffix_cons head tail
+  exact Nat.lt_add_one tail.length
+
+
+@[simp]
+def StrictSuffix.ssuffix_nil {l : List α}
+: l.StrictSuffix [] -> False := by
+  intro h
+  have := length_lt_length h
+  contradiction
 
 
 end List

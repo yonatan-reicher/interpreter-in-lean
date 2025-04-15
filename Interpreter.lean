@@ -3,3 +3,4 @@
 import Interpreter.Basic
 import Interpreter.Lex
 import Interpreter.Parse
+import Interpreter.Check
