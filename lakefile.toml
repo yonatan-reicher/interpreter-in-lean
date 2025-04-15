@@ -10,6 +10,11 @@ autoImplicit = false
 name = "mathlib"
 scope = "leanprover-community"
 
+[[require]]
+name = "assertCmd"
+scope = "pnwamk"
+git = "https://github.com/pnwamk/lean4-assert-command"
+
 [[lean_lib]]
 name = "Interpreter"
 
