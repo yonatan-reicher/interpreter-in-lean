@@ -11,9 +11,20 @@ name = "mathlib"
 scope = "leanprover-community"
 
 [[require]]
+name = "Paperproof"
+git = "https://github.com/Paper-Proof/paperproof.git"
+subDir = "lean"
+rev = "main"
+
+[[require]]
 name = "assertCmd"
 scope = "pnwamk"
 git = "https://github.com/pnwamk/lean4-assert-command"
+
+[[require]]
+name = "all"
+git = "https://www.github.com/yonatan-reicher/lean-all.git"
+rev = "main"
 
 [[lean_lib]]
 name = "Interpreter"
