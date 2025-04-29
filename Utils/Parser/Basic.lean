@@ -1,4 +1,7 @@
-import Interpreter.StrictSuffix
+import Utils.StrictSuffix
+
+
+namespace Utils
 
 
 variable {α β : Type}

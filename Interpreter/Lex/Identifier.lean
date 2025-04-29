@@ -2,9 +2,13 @@ import AssertCmd
 import Interpreter.Lex.Basic
 import Interpreter.Types.Identifier
 import Interpreter.Types.KeywordsAndSymbols
+import Utils.Parser
 
 
 namespace Lex
+
+
+open Utils (Parser)
 
 
 private def filterAttach {α p} (parser : Parser p α) (cond : α -> Bool)

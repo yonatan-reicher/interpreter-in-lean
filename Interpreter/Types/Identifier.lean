@@ -20,8 +20,10 @@ def Name.toList (name : Name) : List Char :=
   name.head.val :: name.tail.map (·.val)
 
 
-instance : ToString Name where
-  toString name := name.toList.asString
+def Name.toString (name : Name) : String := name.toList.asString
+
+
+instance : ToString Name where toString name := name.toString
 
 
 instance : Repr Name where

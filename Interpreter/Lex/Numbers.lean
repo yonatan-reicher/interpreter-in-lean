@@ -1,4 +1,6 @@
 import Interpreter.Lex.Basic
+import Utils.Parser
+open Utils (Parser)
 
 
 abbrev Digit := Fin 10

@@ -3,6 +3,8 @@ import Interpreter.Types.Token
 import Interpreter.Lex.Basic
 import Interpreter.Lex.Numbers
 import Interpreter.Lex.Identifier
+import Utils.Parser
+open Utils (Parser ParseSuccess)
 
 
 variable {α β γ : Type}

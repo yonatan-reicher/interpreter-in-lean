@@ -19,10 +19,10 @@ def Except.elim2 {α β e ε}
 
 def checkWithEnv env : Ast -> Except Error ((ty : Ty) × Expr ty env)
   | Ast.val int => ok ⟨Ty.int, Expr.val int⟩
-  | Ast.var name => 
-    if h : name ∈ env
-    then ok ⟨env[name], Expr.var name⟩
-    else error (Error.NameIsNotDefined name env)
+  | Ast.var (.name name) => 
+    if h : name.toString ∈ env
+    then ok ⟨env[name.toString], Expr.var name.toString⟩
+    else error (Error.NameIsNotDefined name.toString env)
   | Ast.add e1 e2 =>
     Except.elim2
       (fun
@@ -34,7 +34,8 @@ def checkWithEnv env : Ast -> Except Error ((ty : Ty) × Expr ty env)
       (checkWithEnv env e1)
       (checkWithEnv env e2)
     |>.bind id
-  | Ast.let_ var var_expr ret_expr => do
+  | Ast.let_ (.name name) var_expr ret_expr => do
+    let var := name.toString
     let ⟨var_type, var_expr'⟩ <- checkWithEnv env var_expr
     let env' := env.insert var var_type
     let ⟨ty, ret_expr'⟩ <- checkWithEnv env' ret_expr

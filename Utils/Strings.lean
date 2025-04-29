@@ -6,12 +6,12 @@ A class for a type that is like an enum with string values.
 -/
 class Strings (α : Type) where
   all : List (α × String)
-  all_def : ∀ a : α, a ∈ all.map Prod.fst := by
+  mem_all : ∀ a : α, a ∈ all.map Prod.fst := by
     intro a
     cases a <;> decide
 
 
-open Strings (all all_def)
+export Strings (all mem_all)
 
 
 instance [BEq α] [Strings α] : ToString α where

@@ -1,4 +1,10 @@
-import Interpreter.Parser
+import Utils.Parser
+
+
+namespace Lex
+
+
+open Utils (Parser Parsing ParseSuccess)
 
 
 variable {α β : Type}

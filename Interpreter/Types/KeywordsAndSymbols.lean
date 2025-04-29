@@ -1,4 +1,4 @@
-import Interpreter.Strings
+import Utils.Strings
 
 
 inductive Symbol : Type where

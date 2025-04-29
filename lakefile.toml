@@ -29,6 +29,9 @@ rev = "main"
 [[lean_lib]]
 name = "Interpreter"
 
+[[lean_lib]]
+name = "Utils"
+
 [[lean_exe]]
 name = "interpreter"
 root = "Main"

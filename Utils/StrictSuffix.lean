@@ -1,5 +1,4 @@
 import Aesop
-import Paperproof
 
 
 /-!
@@ -162,6 +161,3 @@ def StrictSuffix.ssuffix_nil {l : List α}
   intro h
   have := length_lt_length h
   contradiction
-
-
-end List
