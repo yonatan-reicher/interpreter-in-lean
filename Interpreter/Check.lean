@@ -1,6 +1,7 @@
 import Interpreter.Types.Ast
 import Interpreter.Basic -- Expr
 
+-- TODO: Rename to Check.Error (preferably by using a namespace decl)
 inductive Error
 | NameIsNotDefined (name : String) (vars : VarTypes) : Error
 | Many : List Error -> Error
