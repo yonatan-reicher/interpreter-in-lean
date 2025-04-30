@@ -17,11 +17,15 @@ instance : Strings Symbol where
 
 
 inductive Keyword : Type where
+  | let_ : Keyword
+  | def_ : Keyword
   | fun_ : Keyword
   deriving Repr, Inhabited, DecidableEq, Hashable
 
 
 instance : Strings Keyword where
   all := [
+    (Keyword.let_, "let"),
+    (Keyword.def_, "def"),
     (Keyword.fun_, "fun"),
   ]
