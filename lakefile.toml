@@ -20,6 +20,7 @@ rev = "main"
 name = "assertCmd"
 scope = "pnwamk"
 git = "https://github.com/pnwamk/lean4-assert-command"
+rev = "main"
 
 [[require]]
 name = "all"
