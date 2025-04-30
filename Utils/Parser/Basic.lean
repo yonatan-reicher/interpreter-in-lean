@@ -195,6 +195,24 @@ instance : Lawful (@token p) where
       exact List.StrictSuffix.ssuffix_cons
 
 
+def tokenEq [BEq p.token] (token : p.token) : Parser p Unit :=
+  mk fun
+  | [] => .none
+  | head :: rest =>
+    if head == token
+    then .some (.ok ⟨(), rest⟩)
+    else .none
+
+
+def tokensEq [BEq p.token] (tokens : List p.token) : Parser p Unit :=
+  match tokens with
+  | [] => pure ()
+  | head :: tail => tokenEq head *> tokensEq tail
+
+
+instance [BEq p.token] : Coe (p.token) (Parser p Unit) := ⟨tokenEq⟩
+
+
 def eof : Parser p Unit :=
   mk fun | [] => .some (.ok ⟨(), []⟩) | _ :: _ => .none
 
@@ -226,6 +244,19 @@ partial def many (parser : Parser p α) : Parser p (List α) :=
 
 def oneOrMore (parser : Parser p α) : Parser p (List α) :=
   many parser |>.filter (·.length > 0)
+
+
+def lazy (f : Unit -> Parser p α) : Parser p α :=
+  pure () >>= f
+
+
+partial def recursive (f : Parser p α -> Parser p α) : Parser p α :=
+  f $ lazy fun () => recursive f
+
+
+def run (parser : Parser p α) (input : List p.token)
+: Option (Except p.error (ParseSuccess p α)) :=
+  parser.parse input
 
 
 end Parser
