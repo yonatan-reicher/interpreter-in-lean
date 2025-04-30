@@ -36,7 +36,7 @@ def checkWithEnv env : Ast -> Except Error ((ty : Ty) × Expr ty env)
       (checkWithEnv env e1)
       (checkWithEnv env e2)
     |>.bind id
-  | Ast.let_ (.name name) var_expr ret_expr => do
+  | Ast.letIn (.name name) var_expr ret_expr => do
     let var := name.toString
     let ⟨var_type, var_expr'⟩ <- checkWithEnv env var_expr
     let env' := env.insert var var_type
