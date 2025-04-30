@@ -5,6 +5,7 @@ inductive Error
 | NameIsNotDefined (name : String) (vars : VarTypes) : Error
 | Many : List Error -> Error
 | TypesCannotBeAdded : SomeExpr -> SomeExpr -> Error
+deriving Inhabited, Repr
 
 open Except (ok error)
 
