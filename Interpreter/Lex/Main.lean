@@ -23,12 +23,19 @@ def whitespace : Lexer Unit :=
 def token : Lexer Token :=
   Parser.not Parser.eof *> (
     Token.int <$> int
+    <|> symbol
     <|> ofIOrK <$> identifierOrKeyword
-    <|> .error Error.couldNotRecognizeToken
+    <|> .error .couldNotRecognizeToken
   )
-  where ofIOrK : Sum Ident Keyword -> Token
+  where
+    ofIOrK : Sum Ident Keyword -> Token
     | Sum.inl ident => Token.ident ident
     | Sum.inr keyword => Token.keyword keyword
+
+    symbol : Lexer Token :=
+      all (α:=Symbol)
+      |>.map (fun (symbol, string) => Parser.tokensEq string.toList *> pure symbol)
+      |>.foldr (. <|> .) failure
 
 
 def lexer : Lexer (List Token) :=
