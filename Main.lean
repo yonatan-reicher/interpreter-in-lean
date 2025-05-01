@@ -3,6 +3,8 @@ import Interpreter
 
 open Std
 open Interpreter
+open Interpreter.Parse (parse)
+open Interpreter.Eval (eval)
 
 
 inductive MError
@@ -37,22 +39,15 @@ def coeError {ε α ε'} [∀ e, CoeT ε e ε'] (x : Except ε α) : Except ε' 
 
 -- TODO: Rename
 def arstarts (code : String)
-: Except MError $ (type : Ty) × (Expr type ∅) := do
+: Except MError $ (ty : Ty) × Val ty := do
   let tokens <- Lex.lex code.toList |> coeError
   dbg_trace s!"Tokens: {repr tokens}"
   let ast <- parse tokens |> coeError
   dbg_trace s!"Ast: {repr ast}"
-  let expr <- check ast |> coeError
+  let ⟨ty, expr⟩ <- check ast |> coeError
   dbg_trace s!"Expr: {repr expr}"
-  return expr
-
-
--- def parseStream (stream : IO.FS.Stream) : ExceptT Unit IO $ (type : Ty) × (Expr type ∅) := do
-def parseStream (stream : IO.FS.Stream) : ExceptT MError IO $ Ast := do
-  let code <- stream.readText
-  let tokens <- Lex.lex code.toList |>.mapError fun (e : Lex.Error) => (e : MError)
-  let ast <- parse tokens |>.mapError fun (e : Parse.Error) => (e : MError)
-  return ast
+  let val := eval expr (VarValues.empty : VarValues ∅)
+  return ⟨ty, val⟩
 
 
 def main : IO Unit := do
