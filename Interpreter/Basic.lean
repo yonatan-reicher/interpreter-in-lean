@@ -12,6 +12,13 @@ abbrev Val : Ty → Type
   | Ty.int => Int
   | Ty.bool => Bool
 
+instance {ty} : Inhabited (Val ty) where
+  default := by
+    cases ty <;> (
+      unfold Val
+      exact default
+    )
+
 instance {ty : Ty} : Repr (Val ty) where
   reprPrec v _ :=
     match ty with
