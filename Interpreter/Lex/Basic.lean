@@ -1,7 +1,7 @@
 import Utils.Parser
 
 
-namespace Lex
+namespace Interpreter.Lex
 
 
 open Utils (Parser Parsing ParseSuccess)

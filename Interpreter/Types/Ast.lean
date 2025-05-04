@@ -1,6 +1,9 @@
 import Interpreter.Types.Identifier
 
 
+namespace Interpreter.Types
+
+
 -- TODO:
 /-
 1. Rename Ast to Expr
@@ -14,8 +17,6 @@ inductive Ast : Type where
   | val : Int → Ast
   --- x
   | var : Ident → Ast
-  --- x + y
-  | add : Ast → Ast → Ast
-  --- let x := 123 in x + y
+  --- x := 123; f x
   | letIn : Ident → Ast → Ast → Ast
   deriving Repr, BEq, Inhabited

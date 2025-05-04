@@ -1,6 +1,9 @@
 import Utils.Strings
 
 
+namespace Interpreter.Types
+
+
 inductive Symbol : Type where
   | fatArrow
   | colonEqual

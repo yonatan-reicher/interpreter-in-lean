@@ -10,7 +10,10 @@ open Utils (Parser ParseSuccess)
 variable {α β γ : Type}
 
 
-namespace Lex
+namespace Interpreter.Lex
+
+
+open Interpreter.Types (Token Ident Keyword Symbol)
 
 
 def ignore := fun (_ : α) => ()

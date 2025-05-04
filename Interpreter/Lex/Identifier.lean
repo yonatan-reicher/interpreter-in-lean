@@ -1,13 +1,15 @@
 import AssertCmd
 import Interpreter.Lex.Basic
+import Interpreter.Types.Name
 import Interpreter.Types.Identifier
 import Interpreter.Types.KeywordsAndSymbols
 import Utils.Parser
 
 
-namespace Lex
+namespace Interpreter.Lex
 
 
+open Interpreter.Types (Name Ident Keyword)
 open Utils (Parser)
 
 

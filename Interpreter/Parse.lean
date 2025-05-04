@@ -7,6 +7,9 @@ open Utils (Parser)
 namespace Interpreter.Parse
 
 
+open Interpreter.Types (Ident Token Ast Name Symbol)
+
+
 inductive Error
   | expectedExpressionAfterColonEqual
   | expectedSemicolonAfterLocalVarDecl
@@ -25,6 +28,7 @@ abbrev ident : Parser Ident :=
 
 
 def expr : Parser Ast := .recursive fun expr => do
+  -- let startingAtom <- atom expr
   match <- Parser.token with
   | .int val => return Ast.val val
   | .ident i =>
@@ -36,6 +40,15 @@ def expr : Parser Ast := .recursive fun expr => do
       return Ast.letIn i rhs body)
     <|> pure (Ast.var i)
   | _ => failure
+  where
+    atom : Parser Ast := do
+    match <- Parser.token with
+    | .int val => return Ast.val val
+    | .ident i => return Ast.var i
+    -- TODO: Add parenthesis
+    | _ => failure
+
+
 
 
 /-

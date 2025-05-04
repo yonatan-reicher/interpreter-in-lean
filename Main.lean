@@ -3,6 +3,7 @@ import Interpreter
 
 open Std
 open Interpreter
+open Interpreter.Types (Expr Ty VarTypes Val)
 open Interpreter.Parse (parse)
 open Interpreter.Eval (eval)
 
@@ -46,7 +47,7 @@ def arstarts (code : String)
   dbg_trace s!"Ast: {repr ast}"
   let ⟨ty, expr⟩ <- check ast |> coeError
   dbg_trace s!"Expr: {repr expr}"
-  let val := eval expr (VarValues.empty : VarValues ∅)
+  let val := eval {} expr
   return ⟨ty, val⟩
 
 

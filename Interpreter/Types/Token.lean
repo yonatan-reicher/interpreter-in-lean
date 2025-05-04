@@ -2,6 +2,9 @@ import Interpreter.Types.KeywordsAndSymbols
 import Interpreter.Types.Identifier
 
 
+namespace Interpreter.Types
+
+
 inductive Token where
   | int (val : Int)
   | ident (i : Ident)

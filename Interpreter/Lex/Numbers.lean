@@ -21,7 +21,7 @@ private def charToDigit : Char -> Option Digit
   | _ => none
 
 
-namespace Lex
+namespace Interpreter.Lex
 
 
 def digit : Lexer Digit := do
