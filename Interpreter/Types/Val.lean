@@ -9,22 +9,25 @@ def Val : Ty -> Type
   | .bool => Bool
 
 
-variable {ty : Ty}
 
 
 --- This macro infers the underlying instance of the type `Val ty`
-syntax "underlying_instance" Lean.Parser.Tactic.elimTarget : tactic
+syntax "underlying_instance" term : command
 macro_rules
-  | `(tactic| underlying_instance $ty) =>
-    `(tactic|
-      cases $ty;
-      all_goals
-        unfold Val
-        infer_instance)
+  | `(command| underlying_instance $typeclass) =>
+    `(command|
+      instance
+      {ty : Ty}
+      : $typeclass (Val ty) := by
+        cases ty
+        all_goals
+          unfold Val
+          infer_instance)
 
 
-instance : Inhabited (Val ty) := by underlying_instance ty
-instance : Repr (Val ty) := by underlying_instance ty
-instance : ToString (Val ty) := by underlying_instance ty
-instance : DecidableEq (Val ty) := by underlying_instance ty
-instance : Hashable (Val ty) := by underlying_instance ty
+-- Implements some classes for `Val`
+underlying_instance Inhabited
+underlying_instance Repr
+underlying_instance Std.ToFormat
+underlying_instance ToString
+underlying_instance DecidableEq
