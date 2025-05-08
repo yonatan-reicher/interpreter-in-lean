@@ -12,7 +12,7 @@ open Interpreter.Types (
 )
 
 
-partial def eval {ty vars} (values : VarValues vars) (expr : Expr ty vars)
+def eval {ty vars} (values : VarValues vars) (expr : Expr ty vars)
 : Val ty :=
   match expr with
   | Expr.val v => v
