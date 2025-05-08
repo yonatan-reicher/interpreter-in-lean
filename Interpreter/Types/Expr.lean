@@ -15,7 +15,6 @@ inductive Expr : Ty -> VarTypes -> Type where
   -- deriving Repr, DecidableEq
 
 
-instance {ty vt} : Inhabited (Expr ty vt) where default := .val default
 /-
 instance {ty vt} : BEq (Expr ty vt) where
   beq
