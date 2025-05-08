@@ -36,6 +36,12 @@ axiom Std.HashMap.getElem_map
 
 
 variable {vt : VarTypes}
+instance : Inhabited (VarValues {}) := ⟨{
+  hashMap := {}
+  full k := by simp only [HashMap.not_mem_empty]
+  types_eq k h := by simp only [HashMap.not_mem_empty] at h
+}⟩
+/- TODO: Should this be removed?
 instance : Inhabited (VarValues vt) := ⟨{
     -- hashMap := vt.map fun name ty => ⟨ty, default⟩ -- Too hard to prove
     hashMap := vt.map fun _ ty => ⟨ty, default⟩
@@ -45,6 +51,7 @@ instance : Inhabited (VarValues vt) := ⟨{
       rw [Std.HashMap.mem_map_iff] at name_mem_vt
       rw [Std.HashMap.getElem_map]
   }⟩
+-/
 instance : EmptyCollection (VarValues {}) := ⟨{
     hashMap := {}
     full k := by apply Iff.intro <;> simp
